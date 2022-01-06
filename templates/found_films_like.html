@@ -16,19 +16,26 @@
     </div>
   </header>
   <main class="container">
-    <form action="/cast/">
-        <p>По АКТЕРАМ</p>
-        <input type="text" name="listed_in_0" list="team_list">
-        <input type="text" name="listed_in_1" list="team_list">
-            <datalist id="team_list">
+    <form action="/found/">
+         <form action="/listed_in/">
+        <p>По жанру</p>
+        <select name="listed_in" >
             {% for top10 in s %}
-                <option value="{{ top10 }}">{{ top10 }}</option>
+            <option value="{{ top10 }}">{{ top10 }}</option>
             {% endfor %}
-            </datalist>
         </select>
+            <select name="type_m" >
+            {% for top10 in t_list %}
+            <option value="{{ top10 }}">{{ top10 }}</option>
+            {% endfor %}
+        </select>
+        <p>ОТ</p>
+        <input type="search" name="year_from" class="search__input">
+        <p>ДО</p>
+        <input type="search" name="year_to" class="search__input">
         <input type="submit" value="Найти" class="button">
     </form>
-       <h2>Поиск по группе {{ name_sa }}</h2>
+       <h2>Поиск по группе</h2>
           <div class="items__item item">
         {% for films in w %}
                 <div class="item__top">

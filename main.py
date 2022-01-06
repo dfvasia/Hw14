@@ -134,7 +134,7 @@ def found_page_listed_in():
 
 @app.route("/cast/")
 def found_page_cast_to_cast():
-	list_listed_in = set()
+	list_listed_in_1 = set()
 	dict_t = []
 	query = f"\
 		SELECT DISTINCT `cast` \
@@ -145,22 +145,56 @@ def found_page_cast_to_cast():
 	for row in s:
 		temp_t = row[0].split(', ')
 		for t in temp_t:
-			list_listed_in.add(t)
+			list_listed_in_1.add(t)
+	movie_search_listed_in_0 = request.args.get("listed_in_0")
+	movie_search_listed_in_1 = request.args.get("listed_in_1")
+	if movie_search_listed_in_0 is not None and movie_search_listed_in_1 is not None:
+		query = f"\
+			SELECT title,`cast` \
+			FROM netflix\
+			WHERE `cast` LIKE '%{movie_search_listed_in_0}%' AND `cast` LIKE '%{movie_search_listed_in_1}%'"
+		s = sql(DBNAME, query)
+		if len(s) >= 2:
+			for row in s:
+				dict_t.append({
+					"title": row[0],
+					"description": row[1]
+				})
+		return render_template('found_films_cast_to_cast.html', s=list_listed_in_1, w=dict_t)
+	return render_template('found_films_cast_to_cast.html', s=list_listed_in_1)
+
+
+@app.route("/found/")
+def found_page_like():
 	movie_search_listed_in = request.args.get("listed_in")
-	query = f"\
-		SELECT title, description \
-		FROM netflix\
-		WHERE listed_in LIKE '%{movie_search_listed_in}%'\
-		ORDER BY 'release_year' DESC\
-		LIMIT 10"
+	movie_search_type = request.args.get("type_m")
+	movie_search_year_from = request.args.get("year_from")
+	movie_search_year_to = request.args.get("year_to")
+	list_listed_in = set()
+	list_type = set()
+	dict_t = []
+	query = f"SELECT DISTINCT listed_in FROM netflix WHERE type = 'Movie' "
 	s = sql(DBNAME, query)
 	for row in s:
-		dict_t.append({
-			"title": row[0],
-			"description": row[1]
-		})
-	return render_template('found_films_cast_to_cast.html', s=list_listed_in, w=dict_t, name_sa=movie_search_listed_in)
-	# return jsonify(s)
+		temp_t = row[0].split(', ')
+		for t in temp_t:
+			list_listed_in.add(t)
+	query = f"SELECT DISTINCT type FROM netflix "
+	s = sql(DBNAME, query)
+	for i in s:
+		list_type.add(i[0])
+	if movie_search_year_from is not None and movie_search_year_to is not None and movie_search_listed_in is not None and movie_search_type is not None:
+		query = f"SELECT title, description FROM netflix WHERE release_year BETWEEN {movie_search_year_from} " \
+				f"AND {movie_search_year_to} OR listed_in LIKE '%{movie_search_listed_in}%' OR type = '{movie_search_type}' "
+		s = sql(DBNAME, query)
+		for row in s:
+			print(row)
+			dict_t.append({
+				"title": row[0],
+				"description": row[1]
+			})
+		return render_template('found_films_like.html', s=list_listed_in, t_list=list_type, w=dict_t)
+	return render_template('found_films_like.html', s=list_listed_in, t_list=list_type)
 
 # query = """
 # 	SELECT
@@ -168,6 +202,7 @@ def found_page_cast_to_cast():
 #
 # """
 # sql(DBNAME, query)
+
 
 if __name__ == '__main__':
 	app.run(debug=True)
